@@ -6,7 +6,9 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -24,8 +26,8 @@ public class Robot extends IterativeRobot {
 	DigitalInput toteInRobot;
 	Encoder backRightEncoder; Encoder backLeftEncoder;
 	final int lowerSetPoint = 80;
-	final int upperSetPoint = 1250;
-	final int autoTimeout = 1900;
+	final int upperSetPoint = 1220;
+	final int autoTimeout = 1880;
 	int autoCounter2;
 	Compressor compressor;
 	Solenoid dogs;
@@ -85,8 +87,9 @@ public class Robot extends IterativeRobot {
     	liftEncoder.reset();
     	compressor.start();
     	
- 	if(auxCard.getRawButton(8)){ //try for 2 box
- 		backLeftEncoder.reset();
+ 	if(auxCard.getRawButton(8)){ 
+ 		
+ 		backLeftEncoder.reset(); //one box auto
     	while(!toteInRobot.get() && autoLoopCounter < autoTimeout){ //pick box 
     		drive.arcadeDrive(-0.4, 0);
     		rightPicker.set(0.6);
@@ -97,11 +100,13 @@ public class Robot extends IterativeRobot {
     		arm.set(false);
     		autoLoopCounter++;
     		Timer.delay(0.005);
-    		//System.out.println(autoLoopCounter);
+    		System.out.println(autoLoopCounter);
     		
     	}
-    	
-    	while(liftEncoder.getDistance() < 1250 && autoLoopCounter < autoTimeout){ //lift up
+    	gyro.reset();
+ 		backLeftEncoder.reset();
+
+    	while(liftEncoder.getDistance() < 400 && autoLoopCounter < autoTimeout){ //lift up
     		drive.arcadeDrive(0, 0);
     		rightPicker.set(0);
     		leftPicker.set(0);
@@ -112,43 +117,125 @@ public class Robot extends IterativeRobot {
     		autoLoopCounter++;
     		Timer.delay(0.005);
     	}
- 		
-    	while(liftEncoder.getDistance() > 60 && autoLoopCounter < autoTimeout){ //lift down
-    		drive.arcadeDrive(0, 0);
-    		rightPicker.set(0);
-    		leftPicker.set(0);
-    		lift.set(-0.8);
-    		dogs.set(false);
-    		pusher.set(false);
-    		arm.set(false);
-    		autoLoopCounter++;
-    		Timer.delay(0.005);
-    	}
     	
-    	while(liftEncoder.getDistance() > 60 && autoLoopCounter < autoTimeout){ //lift down
-    		drive.arcadeDrive(0, 0);
-    		rightPicker.set(0);
-    		leftPicker.set(0);
-    		lift.set(-0.8);
-    		dogs.set(false);
-    		pusher.set(false);
-    		arm.set(false);
-    		autoLoopCounter++;
-    		Timer.delay(0.005);
-    	}
-    	
-    	while(autoCounter2 < 20 && autoLoopCounter < autoTimeout){ //move barrel 
-    		drive.arcadeDrive(0, 0);
+    	while(gyro.getAngle() < 85 && autoLoopCounter < autoTimeout){ //turn right 90
+    		drive.arcadeDrive(0, 0.7);
     		rightPicker.set(0);
     		leftPicker.set(0);
     		lift.set(0);
     		dogs.set(false);
     		pusher.set(false);
+    		arm.set(false);
+    		autoLoopCounter++;
+    		Timer.delay(0.005);
+    		
+    	}
+    	backLeftEncoder.reset();
+    	
+    	while(backLeftEncoder.getDistance() < 1750 && autoLoopCounter < autoTimeout){ //drive 4ward 
+    		drive.arcadeDrive(-0.7, 0);
+    		rightPicker.set(0);
+    		leftPicker.set(0);
+    		lift.set(0);
+    		dogs.set(false);
+    		pusher.set(false);
+    		arm.set(false);
+    		autoLoopCounter++;
+    		Timer.delay(0.005);
+    		
+    	}
+    	backLeftEncoder.reset();
+    	
+    	while(gyro.getAngle() < 165 && autoLoopCounter < autoTimeout){ //turn right 45
+    		drive.arcadeDrive(0, 0.7);
+    		rightPicker.set(0);
+    		leftPicker.set(0);
+    		lift.set(0);
+    		dogs.set(false);
+    		pusher.set(false);
+    		arm.set(false);
+    		autoLoopCounter++;
+    		Timer.delay(0.005);
+    		
+    	}
+    	backLeftEncoder.reset();
+    	
+    	while(!liftLowerLimit.get() && autoLoopCounter < autoTimeout){ //lift down
+    		drive.arcadeDrive(0, 0);
+    		rightPicker.set(0);
+    		leftPicker.set(0);
+    		lift.set(-0.8);
+    		dogs.set(false);
+    		pusher.set(false);
+    		arm.set(false);
+    		autoLoopCounter++;
+    		Timer.delay(0.005);
+    		
+    	}
+    	
+    	while(backLeftEncoder.getDistance() > -400 && autoLoopCounter < autoTimeout){ //do unload
+    		drive.arcadeDrive(0.5, 0);
+    		rightPicker.set(-0.5);//reverse rollers
+    		leftPicker.set(0.5);
+    		lift.set(0);
+    		dogs.set(true);
+    		pusher.set(true);
     		arm.set(true);
+    		autoLoopCounter++;
+    		Timer.delay(0.005);
+    		
+    	}
+ 		
+ 		
+ 		
+ 		
+ 		//try for 2 box
+ 		/*
+ 		backLeftEncoder.reset();
+    	while(!toteInRobot.get() && autoLoopCounter < autoTimeout){ //pick box 
+    		drive.arcadeDrive(-0.4, 0);
+    		rightPicker.set(0.7);
+    		leftPicker.set(-0.7);
+    		lift.set(0);
+    		dogs.set(false);
+    		pusher.set(false);
+    		arm.set(false);
+    		autoLoopCounter++;
+    		Timer.delay(0.005);
+    		//System.out.println(autoLoopCounter);
+    		
+    	}
+    	
+    	while(liftEncoder.getDistance() < upperSetPoint && autoLoopCounter < autoTimeout){ //lift up
+    		
+    		if(autoCounter2 < 90){
+    			drive.arcadeDrive(-0.6, 0);
+    			arm.set(true);
+    		}else{
+    			drive.arcadeDrive(0, 0);
+    			arm.set(false);
+    		}
+    		rightPicker.set(0);
+    		leftPicker.set(0);
+    		lift.set(1);
+    		dogs.set(false);
+    		pusher.set(false);
+    		
     		autoLoopCounter++;
     		autoCounter2++;
     		Timer.delay(0.005);
-    		
+    	}
+ 		
+    	while(liftEncoder.getDistance() > lowerSetPoint && autoLoopCounter < autoTimeout){ //lift down
+    		drive.arcadeDrive(0, 0);
+    		rightPicker.set(0);
+    		leftPicker.set(0);
+    		lift.set(-0.9);
+    		dogs.set(false);
+    		pusher.set(false);
+    		arm.set(false);
+    		autoLoopCounter++;
+    		Timer.delay(0.005);
     	}
     	
     	backLeftEncoder.reset(); //one box auto
@@ -170,7 +257,7 @@ public class Robot extends IterativeRobot {
     		drive.arcadeDrive(0, 0);
     		rightPicker.set(0);
     		leftPicker.set(0);
-    		lift.set(0.8);
+    		lift.set(1);
     		dogs.set(false);
     		pusher.set(false);
     		arm.set(false);
@@ -192,7 +279,7 @@ public class Robot extends IterativeRobot {
     	}
     	backLeftEncoder.reset();
     	
-    	while(backLeftEncoder.getDistance() < 1450 && autoLoopCounter < autoTimeout){ //drive 4ward 
+    	while(backLeftEncoder.getDistance() < 1550 && autoLoopCounter < autoTimeout){ //drive 4ward 
     		drive.arcadeDrive(-0.7, 0);
     		rightPicker.set(0);
     		leftPicker.set(0);
@@ -206,7 +293,7 @@ public class Robot extends IterativeRobot {
     	}
     	backLeftEncoder.reset();
     	
-    	while(gyro.getAngle() < 175 && autoLoopCounter < autoTimeout){ //turn right 45
+    	while(gyro.getAngle() < 165 && autoLoopCounter < autoTimeout){ //turn right 45
     		drive.arcadeDrive(0, 0.7);
     		rightPicker.set(0);
     		leftPicker.set(0);
@@ -224,7 +311,7 @@ public class Robot extends IterativeRobot {
     		drive.arcadeDrive(0, 0);
     		rightPicker.set(0);
     		leftPicker.set(0);
-    		lift.set(-0.8);
+    		lift.set(-0.9);
     		dogs.set(false);
     		pusher.set(false);
     		arm.set(false);
@@ -244,102 +331,11 @@ public class Robot extends IterativeRobot {
     		autoLoopCounter++;
     		Timer.delay(0.005);
     	}
- 		/* 
- 		backLeftEncoder.reset(); //one box auto
-    	while(!toteInRobot.get() && autoLoopCounter < autoTimeout){ //pick box 
-    		drive.arcadeDrive(-0.4, 0);
-    		rightPicker.set(0.6);
-    		leftPicker.set(-0.6);
-    		lift.set(0);
-    		dogs.set(false);
-    		pusher.set(false);
-    		arm.set(false);
-    		autoLoopCounter++;
-    		Timer.delay(0.005);
-    		System.out.println(autoLoopCounter);
-    		
-    	}
+    	*/
     	
-    	while(liftEncoder.getDistance() < 400 && autoLoopCounter < autoTimeout){ //lift up
-    		drive.arcadeDrive(0, 0);
-    		rightPicker.set(0);
-    		leftPicker.set(0);
-    		lift.set(0.8);
-    		dogs.set(false);
-    		pusher.set(false);
-    		arm.set(false);
-    		autoLoopCounter++;
-    		Timer.delay(0.005);
-    	}
     	
-    	while(gyro.getAngle() < 85 && autoLoopCounter < autoTimeout){ //turn right 90
-    		drive.arcadeDrive(0, 0.7);
-    		rightPicker.set(0);
-    		leftPicker.set(0);
-    		lift.set(0);
-    		dogs.set(false);
-    		pusher.set(false);
-    		arm.set(false);
-    		autoLoopCounter++;
-    		Timer.delay(0.005);
-    		
-    	}
-    	backLeftEncoder.reset();
     	
-    	while(backLeftEncoder.getDistance() < 1450 && autoLoopCounter < autoTimeout){ //drive 4ward 
-    		drive.arcadeDrive(-0.7, 0);
-    		rightPicker.set(0);
-    		leftPicker.set(0);
-    		lift.set(0);
-    		dogs.set(false);
-    		pusher.set(false);
-    		arm.set(false);
-    		autoLoopCounter++;
-    		Timer.delay(0.005);
-    		
-    	}
-    	backLeftEncoder.reset();
-    	
-    	while(gyro.getAngle() < 175 && autoLoopCounter < autoTimeout){ //turn right 45
-    		drive.arcadeDrive(0, 0.7);
-    		rightPicker.set(0);
-    		leftPicker.set(0);
-    		lift.set(0);
-    		dogs.set(false);
-    		pusher.set(false);
-    		arm.set(false);
-    		autoLoopCounter++;
-    		Timer.delay(0.005);
-    		
-    	}
-    	backLeftEncoder.reset();
-    	
-    	while(!liftLowerLimit.get() && autoLoopCounter < autoTimeout){ //lift down
-    		drive.arcadeDrive(0, 0);
-    		rightPicker.set(0);
-    		leftPicker.set(0);
-    		lift.set(-0.8);
-    		dogs.set(false);
-    		pusher.set(false);
-    		arm.set(false);
-    		autoLoopCounter++;
-    		Timer.delay(0.005);
-    		
-    	}
-    	
-    	while(backLeftEncoder.getDistance() > -400 && autoLoopCounter < autoTimeout){ //do unload
-    		drive.arcadeDrive(0.5, 0);
-    		rightPicker.set(-0.5);//reverse rollers
-    		leftPicker.set(0.5);
-    		lift.set(0);
-    		dogs.set(true);
-    		pusher.set(true);
-    		arm.set(true);
-    		autoLoopCounter++;
-    		Timer.delay(0.005);
-    		
-    	}
- 		*/
+ 		
  	}else if(auxCard.getRawButton(10)){ //DF auto
  		while(backLeftEncoder.getDistance() < 2000 && autoLoopCounter < autoTimeout){ //drive 4ward 
     		drive.arcadeDrive(-0.7, 0);
@@ -428,10 +424,10 @@ public class Robot extends IterativeRobot {
         	
         	if(auxStick.getRawButton(3) && !liftUpperLimit.get() && liftEncoder.getDistance() < upperSetPoint){  //up
             	lift.set(1);
-            	System.out.println("up");
+            	
             }else if(auxStick.getRawButton(2) && !liftLowerLimit.get() && liftEncoder.getDistance() > lowerSetPoint){  //down
             	lift.set(-0.9);
-            System.out.println("down");
+           
             }else if(auxStick.getRawButton(10) && !liftLowerLimit.get()){ //zero lift encoder
             	lift.set(-0.5); //see if statement below for encoder reset
             }else{
@@ -451,7 +447,7 @@ public class Robot extends IterativeRobot {
         			liftDown = false;
 				
         		}else if(liftUp){ //go up to dogs
-        			if(liftEncoder.getDistance() > (upperSetPoint + 20) || liftUpperLimit.get()){
+        			if(liftEncoder.getDistance() > (upperSetPoint + 10) || liftUpperLimit.get()){
         				liftUp = false;
         				liftWait = true;
         				liftDown = false;
@@ -582,22 +578,25 @@ public class Robot extends IterativeRobot {
         
 //============================================================================================ 
         //drivers station
-        
-        
+        if(toteInRobot.get()){
+        SmartDashboard.putString("DB/String 0", "Tote In: TRUE");
+        }else{
+            SmartDashboard.putString("DB/String 0", "Tote In: FALSE");
+        }
         
         
         
 //============================================================================================
-        Timer.delay(0.005);
+        Timer.delay(0.01);
         //System.out.println(autoLiftCounter);
 		//System.out.println(toteInRobot.get());
         //System.out.println(liftUpperLimit.get());
-        //System.out.println(liftEncoder.getDistance());
+        System.out.println(liftEncoder.getDistance());
         //System.out.println(liftUpperLimit.get() + " upper");
         //System.out.println(liftLowerLimit.get() + " lower");
         //System.out.println(liftEncoder.getDistance());
         //System.out.println(backLeftEncoder.getDistance());
-        System.out.println(gyro.getAngle());
+        //System.out.println(gyro.getAngle());
 
     }
 
